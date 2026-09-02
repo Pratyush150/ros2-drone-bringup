@@ -1,0 +1,25 @@
+# Parameters for drone_bringup telemetry_bridge.
+#
+# The leading "/**" wildcard means these apply whatever namespace the node is
+# pushed into. Without it, a node launched into /uav1 never sees the file,
+# because the YAML key would have to be /uav1/telemetry_bridge exactly. This is
+# the most common reason a ROS 2 params file appears to be ignored.
+/**/telemetry_bridge:
+  ros__parameters:
+    # Namespace MAVROS publishes under. Overridden by the launch file.
+    mavros_namespace: "/mavros"
+
+    # Republish rate for normalised odometry and diagnostics.
+    publish_rate_hz: 20.0
+
+    # An input older than this is reported STALE. Rule of thumb: ~5x the period
+    # of the slowest input you care about. MAVROS global_position/global is
+    # typically 5 Hz on PX4 defaults, so 1.0 s is generous but not silly.
+    stale_after_s: 1.0
+
+    # Satellite count below which GPS diagnostics warn.
+    min_satellites: 8
+
+    # TF frames for the published odometry. See docs/TF_TREE.md.
+    frame_id: "map"
+    child_frame_id: "base_link"

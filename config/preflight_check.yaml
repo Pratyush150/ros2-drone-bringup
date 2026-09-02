@@ -1,0 +1,42 @@
+# Parameters for drone_bringup preflight_check.
+#
+# These thresholds are the gate between "the operator pressed start" and "the
+# motors spin". Tune every one of them for YOUR airframe. The defaults suit a
+# 4S sub-2 kg multirotor flying over open ground.
+/**/preflight_check:
+  ros__parameters:
+    mavros_namespace: "/mavros"
+    geofence_status_topic: "/geofence_monitor/status"
+
+    # 2 Hz is plenty; the verdict is latched, so a consumer never misses it.
+    check_rate_hz: 2.0
+
+    # MAVLink GPS_FIX_TYPE. 3 = 3D fix. A 2D fix has no usable altitude, so
+    # anything that climbs must require 3.
+    min_gps_fix_type: 3
+
+    # Over open ground a modern receiver sees 15-25. Between buildings you may
+    # only see 8, and the position will wander several metres.
+    min_satellites: 8
+
+    # Pack voltage floor. 14.0 V is roughly 3.5 V/cell on a 4S pack -- change
+    # this for a 6S (21.0) or a 3S (10.5). Getting this wrong in the generous
+    # direction is how you fly a pack into its knee.
+    min_battery_voltage: 14.0
+
+    # State of charge as a fraction. 0.40 leaves reserve for an RTL from the
+    # far corner of a survey plus a go-around.
+    min_battery_percent: 0.40
+
+    # Horizontal dilution of precision. Above ~2 the fix is loose enough that a
+    # 2 m waypoint acceptance radius stops meaning anything.
+    max_hdop: 2.0
+
+    # Any input older than this fails preflight outright.
+    max_telemetry_age_s: 1.0
+
+    # In SITL there is no RC transmitter. Set require_rc to false there and
+    # nowhere else.
+    require_rc: true
+    require_geofence: true
+    require_home_set: true

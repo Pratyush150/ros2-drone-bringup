@@ -1,0 +1,86 @@
+# Example mission plan for drone_bringup.
+#
+# Site: the PX4 SITL default home position (Zurich Irchel Park). Replace the
+# origin and every coordinate below with your own site before flying anything
+# real -- the mission_executor will refuse to auto-start if the vehicle is more
+# than max_site_offset_m from this origin, which is exactly the mistake this
+# file is most likely to cause.
+#
+# All altitudes are metres ABOVE THE ORIGIN, not AMSL and not above the
+# ellipsoid. Speeds are ground speed in m/s.
+
+name: irchel_survey
+description: >
+  Climb, transit to the survey area, fly a 20 m lawnmower grid on an east-west
+  heading, orbit the mast at the north-east corner for an inspection pass, then
+  return to launch.
+
+origin:
+  latitude: 47.397742
+  longitude: 8.545594
+  altitude: 488.0
+
+default_speed: 5.0
+default_acceptance_radius: 2.0
+# Above the 50 m mast keepout ceiling in example_geofence.yaml, so the
+# straight-line return does not clip it.
+rtl_altitude: 60.0
+
+items:
+  # A mission must start with a takeoff. Validation rejects anything else,
+  # because a mission that starts with a waypoint flies the first leg at
+  # whatever altitude the vehicle happens to be at.
+  - type: takeoff
+    altitude: 30.0
+
+  # Transit leg. hold_time gives the camera a moment to settle before the grid.
+  - type: waypoint
+    latitude: 47.398100
+    longitude: 8.546300
+    altitude: 35.0
+    speed: 8.0
+    acceptance_radius: 3.0
+    hold_time: 2.0
+
+  # Lawnmower survey. heading is degrees clockwise from north, so 90 gives
+  # east-west lines. spacing is the sensor swath: set it from your camera's
+  # ground footprint at this altitude, minus the overlap you want.
+  - type: survey
+    altitude: 40.0
+    spacing: 20.0
+    heading: 90.0
+    speed: 6.0
+    line_extension: 10.0
+    polygon:
+      - [47.398000, 8.546000]
+      - [47.398000, 8.548650]
+      - [47.399350, 8.548650]
+      - [47.399350, 8.546000]
+
+  # Transit waypoint that stages the orbit approach from the south-east. Without
+  # it the direct leg from the last survey line to the orbit entry cuts straight
+  # through the mast keepout at survey altitude. Straight-line legs between
+  # waypoints do not route around obstacles; if a leg has to avoid something,
+  # you add the waypoint that makes it avoid it.
+  - type: waypoint
+    latitude: 47.399586
+    longitude: 8.549634
+    altitude: 40.0
+    speed: 6.0
+    acceptance_radius: 3.0
+
+  # Inspection orbit around the mast, nose pointed at the centre. The orbit
+  # radius (25 m) clears the mast keepout zone in example_geofence.yaml, which
+  # is what you want: fly around the obstacle, not through the fence.
+  - type: orbit
+    latitude: 47.399850
+    longitude: 8.549150
+    altitude: 35.0
+    radius: 25.0
+    turns: 1.0
+    clockwise: true
+    points_per_turn: 12
+    speed: 3.0
+
+  # Terminal item. Must be the last one; 'land' is the other legal ending.
+  - type: rtl

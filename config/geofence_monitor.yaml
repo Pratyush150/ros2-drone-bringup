@@ -1,0 +1,24 @@
+# Parameters for drone_bringup geofence_monitor.
+/**/geofence_monitor:
+  ros__parameters:
+    mavros_namespace: "/mavros"
+
+    # Absolute path, set by the launch file. Empty means "no fence", which the
+    # monitor reports as an error and which fails preflight. That is deliberate.
+    geofence_file: ""
+
+    # Should be at least as fast as your position update rate. MAVROS
+    # local_position/pose runs at 30-50 Hz on PX4 defaults; 10 Hz here is
+    # enough for a boundary check and cheap.
+    check_rate_hz: 10.0
+
+    # Predicted breaches further out than this are ignored entirely.
+    prediction_horizon_s: 30.0
+
+    # WARN when the predicted breach is closer than this. Set it to your
+    # worst-case stopping time plus your command latency. A 15 m/s multirotor
+    # decelerating at 3 m/s^2 needs 5 s and 37 m; add link latency on top.
+    warn_time_to_breach_s: 5.0
+
+    # WARN when the boundary margin drops below this many metres.
+    warn_margin_m: 10.0

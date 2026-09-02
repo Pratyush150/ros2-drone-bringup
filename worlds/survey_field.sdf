@@ -1,0 +1,218 @@
+<?xml version="1.0" ?>
+<!--
+  survey_field: a small open survey area for PX4 SITL + Gazebo (gz-sim / Harmonic).
+
+  What is here and why:
+    * A 400 x 400 m ground plane. Big enough for the example mission's grid and
+      RTL without the vehicle flying off the edge of the world, which in Gazebo
+      means it keeps flying over nothing and your lidar/camera returns go blank.
+    * Spherical coordinates set to the PX4 SITL default home (Zurich Irchel
+      Park, 47.397742 / 8.545594 / 488 m). PX4's simulated GPS derives its
+      lat/lon from this, so it MUST match the origin in config/example_mission.yaml
+      or every geodetic waypoint lands somewhere else entirely.
+    * A landing pad, a comms mast (matching the exclusion zone in
+      config/example_geofence.yaml), and three tree-sized obstacles to give a
+      camera or lidar something to see.
+    * A light wind plugin. Zero wind is the least useful sim setting there is:
+      it hides every controller tuning problem you would meet outdoors.
+
+  Load it with:
+    export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:<this package>/worlds:<...>/models
+    PX4_GZ_WORLD=survey_field make px4_sitl gz_x500
+-->
+<sdf version="1.9">
+  <world name="survey_field">
+
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"/>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+
+    <!-- Must match config/example_mission.yaml and config/example_geofence.yaml. -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397742</latitude_deg>
+      <longitude_deg>8.545594</longitude_deg>
+      <elevation>488.0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+
+    <gravity>0 0 -9.8066</gravity>
+    <magnetic_field>6.0e-6 2.3e-5 -4.2e-5</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <scene>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.6 0.7 0.85 1</background>
+      <shadows>true</shadows>
+      <grid>false</grid>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 200 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.25 0.25 0.25 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.4 0.3 -0.9</direction>
+    </light>
+
+    <!-- Light, slightly gusty wind. Tune it up to find out where your
+         controller actually falls over. -->
+    <wind>
+      <linear_velocity>2.5 1.0 0</linear_velocity>
+    </wind>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>400 400</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1.0</mu>
+                <mu2>1.0</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>400 400</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.35 0.45 0.25 1</ambient>
+            <diffuse>0.40 0.52 0.28 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Landing pad at the world origin: this is where the vehicle spawns and
+         where RTL brings it back. -->
+    <include>
+      <uri>model://landing_pad</uri>
+      <name>home_pad</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <!-- Comms mast. Its footprint matches the 'mast_keepout' exclusion zone in
+         config/example_geofence.yaml, ~268 m east and ~234 m north of the
+         origin. -->
+    <model name="comms_mast">
+      <static>true</static>
+      <pose>268.5 234.4 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.4</radius>
+              <length>45</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 22.5 0 0 0</pose>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.4</radius>
+              <length>45</length>
+            </cylinder>
+          </geometry>
+          <pose>0 0 22.5 0 0 0</pose>
+          <material>
+            <ambient>0.7 0.2 0.2 1</ambient>
+            <diffuse>0.8 0.25 0.25 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- A few obstacles so a camera or lidar has structure to lock onto.
+         A perfectly featureless plane makes visual odometry and any
+         feature-based SLAM look far better or far worse than it really is. -->
+    <model name="tree_a">
+      <static>true</static>
+      <pose>60 40 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>2.5</radius><length>9</length></cylinder></geometry>
+          <pose>0 0 4.5 0 0 0</pose>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>2.5</radius><length>9</length></cylinder></geometry>
+          <pose>0 0 4.5 0 0 0</pose>
+          <material>
+            <ambient>0.15 0.30 0.12 1</ambient>
+            <diffuse>0.18 0.38 0.15 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_b">
+      <static>true</static>
+      <pose>140 95 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>3.0</radius><length>12</length></cylinder></geometry>
+          <pose>0 0 6 0 0 0</pose>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>3.0</radius><length>12</length></cylinder></geometry>
+          <pose>0 0 6 0 0 0</pose>
+          <material>
+            <ambient>0.15 0.30 0.12 1</ambient>
+            <diffuse>0.18 0.38 0.15 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="shed">
+      <static>true</static>
+      <pose>-45 25 0 0 0 0.4</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>8 5 3.2</size></box></geometry>
+          <pose>0 0 1.6 0 0 0</pose>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>8 5 3.2</size></box></geometry>
+          <pose>0 0 1.6 0 0 0</pose>
+          <material>
+            <ambient>0.45 0.42 0.38 1</ambient>
+            <diffuse>0.55 0.52 0.48 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

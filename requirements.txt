@@ -1,0 +1,13 @@
+# Runtime dependency of drone_bringup.core -- the ROS-free half of the package.
+# This is all you need to run `python3 -m pytest -q` on a machine with no ROS.
+PyYAML>=5.4
+
+# Test-only.
+pytest>=7.0
+
+# NOT listed here on purpose:
+#   rclpy, mavros_msgs, sensor_msgs, geometry_msgs, nav_msgs, std_msgs,
+#   diagnostic_msgs, visualization_msgs, vision_msgs, rcl_interfaces, tf2_ros
+# Those come from a ROS 2 Humble installation and are declared in package.xml,
+# not from pip. Installing pip packages with those names gets you unrelated
+# software.

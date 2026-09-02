@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<package format="3">
+  <name>drone_bringup</name>
+  <version>0.1.0</version>
+  <description>
+    ROS 2 bringup for a PX4 or ArduPilot multirotor: MAVROS telemetry
+    normalisation, a guarded mission-executor state machine, a predictive
+    geofence monitor, preflight gating, and PX4 SITL + Gazebo launch files.
+    All non-ROS logic lives in drone_bringup.core and is unit tested with plain
+    pytest.
+  </description>
+
+  <maintainer email="pratyush@example.invalid">Pratyush Vatsa</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- Runtime: rclpy plus the message packages the nodes actually import. -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>mavros_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>diagnostic_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <!-- Declared for the perception nodes you will bolt on: detections coming
+       back from a Jetson/Hailo pipeline arrive as vision_msgs/Detection2DArray
+       or Detection3DArray, and the executor consumes them without a custom
+       message package. Nothing in this repo imports it yet. -->
+  <exec_depend>vision_msgs</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+
+  <!-- Launch-time only: mavros itself, the launch machinery, rviz. -->
+  <exec_depend>mavros</exec_depend>
+  <exec_depend>mavros_extras</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

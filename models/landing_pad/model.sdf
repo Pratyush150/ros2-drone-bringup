@@ -1,0 +1,141 @@
+<?xml version="1.0" ?>
+<!--
+  landing_pad: a 4 m diameter pad with an H marking and corner fiducials.
+
+  The geometry is deliberately built from primitives with emissive materials
+  instead of a texture map. Two reasons:
+    * No binaries in the repo.
+    * A textured plane at a grazing angle mipmaps into mush, and then your
+      precision-landing detector stops seeing the marker at exactly the altitude
+      where you need it. Solid geometry keeps its contrast all the way down.
+
+  The pad is 0.02 m thick and sits on the ground, so a vehicle spawned at
+  z = 0 is standing on it and does not fall through or get launched by a
+  collision resolution spike.
+-->
+<sdf version="1.9">
+  <model name="landing_pad">
+    <static>true</static>
+
+    <link name="pad">
+      <collision name="collision">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>2.0</radius>
+            <length>0.02</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.2</mu>
+              <mu2>1.2</mu2>
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <kp>1e6</kp>
+              <kd>100</kd>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+
+      <visual name="deck">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>2.0</radius>
+            <length>0.02</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.08 0.08 0.08 1</ambient>
+          <diffuse>0.12 0.12 0.12 1</diffuse>
+          <specular>0.02 0.02 0.02 1</specular>
+        </material>
+      </visual>
+
+      <!-- White ring, drawn as a slightly larger, slightly lower disc so it
+           reads as an outline from above without needing a texture. -->
+      <visual name="ring">
+        <pose>0 0 0.005 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>2.0</radius>
+            <length>0.012</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.85 0.85 0.85 1</ambient>
+          <diffuse>0.95 0.95 0.95 1</diffuse>
+          <emissive>0.25 0.25 0.25 1</emissive>
+        </material>
+      </visual>
+
+      <!-- H marking: two uprights and a crossbar. -->
+      <visual name="h_left">
+        <pose>-0.45 0 0.022 0 0 0</pose>
+        <geometry><box><size>0.22 1.60 0.004</size></box></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <emissive>0.35 0.35 0.35 1</emissive>
+        </material>
+      </visual>
+      <visual name="h_right">
+        <pose>0.45 0 0.022 0 0 0</pose>
+        <geometry><box><size>0.22 1.60 0.004</size></box></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <emissive>0.35 0.35 0.35 1</emissive>
+        </material>
+      </visual>
+      <visual name="h_bar">
+        <pose>0 0 0.022 0 0 0</pose>
+        <geometry><box><size>0.90 0.22 0.004</size></box></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <emissive>0.35 0.35 0.35 1</emissive>
+        </material>
+      </visual>
+
+      <!-- Corner fiducials. Four asymmetric squares give a downward camera
+           something with a resolvable orientation, which a plain H does not
+           (an H is symmetric under 180 degree rotation, so a detector using it
+           alone cannot tell you which way the pad is facing). -->
+      <visual name="fiducial_ne">
+        <pose>1.15 1.15 0.022 0 0 0</pose>
+        <geometry><box><size>0.30 0.30 0.004</size></box></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <emissive>0.35 0.35 0.35 1</emissive>
+        </material>
+      </visual>
+      <visual name="fiducial_nw">
+        <pose>-1.15 1.15 0.022 0 0 0</pose>
+        <geometry><box><size>0.30 0.30 0.004</size></box></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <emissive>0.35 0.35 0.35 1</emissive>
+        </material>
+      </visual>
+      <visual name="fiducial_sw">
+        <pose>-1.15 -1.15 0.022 0 0 0</pose>
+        <geometry><box><size>0.30 0.30 0.004</size></box></geometry>
+        <material>
+          <ambient>0.9 0.9 0.9 1</ambient>
+          <diffuse>1.0 1.0 1.0 1</diffuse>
+          <emissive>0.35 0.35 0.35 1</emissive>
+        </material>
+      </visual>
+      <!-- The south-east corner is deliberately left empty. Three fiducials in
+           an L give a unique orientation; four identical ones do not. -->
+    </link>
+  </model>
+</sdf>

@@ -1,0 +1,35 @@
+# Parameters for drone_bringup mission_executor.
+/**/mission_executor:
+  ros__parameters:
+    mavros_namespace: "/mavros"
+
+    # Absolute path, set by the launch file.
+    mission_file: ""
+
+    # Start the tick timer on construction. Set false when a lifecycle manager
+    # drives this node.
+    auto_activate: true
+
+    # Begin the mission as soon as preflight passes, with no operator command.
+    # false is the only sane default on a real vehicle. To start manually:
+    #   ros2 topic pub --once /mission_executor/command std_msgs/String \
+    #     "{data: start}"
+    auto_start: false
+
+    # Setpoint and state-machine rate. PX4 drops OFFBOARD if setpoints stop for
+    # ~0.5 s, so this must stay comfortably above 2 Hz. 20 Hz is the norm.
+    tick_rate_hz: 20.0
+
+    # Used only when the mission does not supply a takeoff altitude.
+    takeoff_altitude_m: 10.0
+
+    # Abort if a single waypoint is not reached in this long. Catches a vehicle
+    # fighting a headwind it cannot beat.
+    waypoint_timeout_s: 120.0
+
+    # Route to RTL when the geofence monitor reports a breach.
+    abort_on_geofence_breach: true
+
+    # Refuse to auto-start if the vehicle is further than this from the mission
+    # origin. Catches the mission file you copied from last month's site.
+    max_site_offset_m: 5000.0

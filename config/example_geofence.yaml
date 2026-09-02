@@ -1,0 +1,47 @@
+# Example geofence for drone_bringup.
+#
+# Altitudes are metres UP in the local ENU frame anchored at 'origin' -- the
+# same datum the mission uses. They are NOT AMSL. Keeping one datum across the
+# mission, the fence, and the setpoints is the single biggest source of
+# "the drone flew 40 m lower than I asked" bugs.
+#
+# The monitor evaluates:
+#   * every inclusion zone  -> the vehicle must be inside all of them
+#   * every exclusion zone  -> the vehicle must be outside all of them
+#   * the global altitude band
+# and predicts time-to-breach from the current velocity, so you get a warning
+# before the boundary rather than after it.
+
+origin:
+  latitude: 47.397742
+  longitude: 8.545594
+  altitude: 488.0
+
+# 120 m is the legal ceiling in a lot of jurisdictions. Check yours.
+max_altitude_m: 120.0
+# A floor below zero allows for terrain that drops away from the launch point.
+min_altitude_m: -10.0
+
+zones:
+  - name: operating_area
+    kind: inclusion
+    vertices:
+      - [47.396800, 8.544000]
+      - [47.396800, 8.550400]
+      - [47.400600, 8.550400]
+      - [47.400600, 8.544000]
+
+  # Keep-out around the comms mast. The mast in worlds/survey_field.sdf is 45 m
+  # tall, so the zone stops applying at 50 m: below that you must go around,
+  # above it you may overfly. Set this from the real obstacle height plus your
+  # altitude error budget, and make sure your RTL altitude clears it -- a
+  # straight-line RTL through a keepout is a classic way to fly into the one
+  # obstacle you carefully drew a box around.
+  - name: mast_keepout
+    kind: exclusion
+    max_altitude_m: 50.0
+    vertices:
+      - [47.399700, 8.549020]
+      - [47.399700, 8.549280]
+      - [47.400000, 8.549280]
+      - [47.400000, 8.549020]
