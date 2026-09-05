@@ -287,15 +287,27 @@ class TestSimulationAssets:
         assert len(link.findall("visual")) >= 4
 
     def test_no_binary_assets_are_committed(self):
-        """Text-only repo: catches a stray mesh, texture, or bag file."""
+        """The *package* stays text-only: catches a stray mesh, texture or bag.
+
+        `docs/screenshots/` is exempt. The rule exists so the package payload
+        cannot quietly grow a 40 MB mesh or a rosbag that nobody notices in
+        review; documentation images are deliberate, reviewed, and are not
+        shipped to a robot. Excluding the whole repo instead of just the
+        package would have made the rule unenforceable the moment the README
+        gained a figure.
+        """
         binary_suffixes = {".dae", ".stl", ".png", ".jpg", ".jpeg", ".bin", ".db3", ".pyc"}
-        offenders = [
-            str(p.relative_to(REPO))
-            for p in REPO.rglob("*")
-            if p.is_file()
-            and p.suffix.lower() in binary_suffixes
-            and "__pycache__" not in p.parts
-        ]
+        exempt_dirs = {("docs", "screenshots")}
+        offenders = []
+        for p in REPO.rglob("*"):
+            if not p.is_file() or p.suffix.lower() not in binary_suffixes:
+                continue
+            parts = p.relative_to(REPO).parts
+            if "__pycache__" in parts:
+                continue
+            if any(parts[: len(d)] == d for d in exempt_dirs):
+                continue
+            offenders.append(str(p.relative_to(REPO)))
         assert not offenders, f"binary assets found: {offenders}"
 
 
